@@ -1,79 +1,74 @@
 package com.marvel.controller;
 
-import com.marvel.exceptions.NotFoundException;
-import com.marvel.model.Character;
-import com.marvel.model.Comic;
+import com.marvel.record.CharacterRecord;
+import com.marvel.record.ComicRecord;
 import com.marvel.service.CharacterService;
 import com.marvel.service.ComicService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.ws.rs.QueryParam;
 import java.util.List;
 
 @RestController
-@RequestMapping("/comics")
+@RequestMapping("/v1/public/comics")
 @Api(value = "comics_resources", description = "CRUD comics")
 public class ComicController {
 
-    @Autowired
-    private ComicService comicService;
-    @Autowired
-    private CharacterService characterService;
+    private static final Logger LOG = LoggerFactory.getLogger(ComicController.class);
 
-    @GetMapping("")
-    @ApiOperation(value = "Fetches lists of comics.")
-    public ResponseEntity<List<Comic>> findAll(@QueryParam("title") String title,
-                                               @QueryParam("start") Integer start,
-                                               @QueryParam("size") Integer size,
-                                               @QueryParam("sortedBy") String sortedBy) {
+    private final ComicService comicService;
+    private final CharacterService characterService;
 
-        List<Comic> allComics = comicService.findAllComics();
-        if (sortedBy != null) allComics = comicService.sortBy(sortedBy);
+    public ComicController(ComicService comicService,
+                           CharacterService characterService) {
+        this.comicService = comicService;
+        this.characterService = characterService;
+    }
 
-        if (title != null) allComics = comicService.getAllComicsForTitle(title, allComics);
-
-        if (start != null && size != null) allComics = comicService.getAllComicsPaginated(start, size, allComics);
-
-        if (allComics != null) {
-            return ResponseEntity.ok(allComics);
-        } else {
-            throw new NotFoundException();
-        }
+    @GetMapping
+    @ApiOperation(value = "Возвращает список комиксов")
+    public ResponseEntity<List<ComicRecord>> findAll(@RequestParam(value = "title", required = false) String title,
+                                                     @RequestParam(value = "start", required = false, defaultValue = "0") Integer start,
+                                                     @RequestParam(value = "size", required = false, defaultValue = "20") Integer size,
+                                                     @RequestParam(value = "sortedBy", required = false, defaultValue = "title") String sortedBy) {
+        LOG.info("Запрос на список комиксов");
+        List<ComicRecord> comicRecords = comicService.findAllComics(title, start, size, sortedBy);
+        return !comicRecords.isEmpty() ? ResponseEntity.ok(comicRecords) : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/{id}")
-    @ApiOperation(value = "Находим комикс по id.")
-    public ResponseEntity<Comic> findById(@RequestParam int id) {
-        Comic comic = comicService.findById(id);
-        if (comic != null) {
-            return ResponseEntity.ok(comic);
-        } else {
-            throw new NotFoundException();
-        }
+    @ApiOperation(value = "Находит комикс по id")
+    public ResponseEntity<ComicRecord> findById(@PathVariable Long id) {
+        LOG.info("Запрос на комикс по id");
+        return ResponseEntity.ok(comicService.findById(id));
     }
-
 
     @GetMapping("/{comicId}/characters")
-    @ApiOperation(value = "Находим списки персонажей по комиксу id.")
-    public ResponseEntity<List<Character>> findByComicId(@RequestParam int id) {
-        List<Character> result = characterService.findByComicId(id);
-        if (result != null)
-            return ResponseEntity.ok(result);
-        else throw new NotFoundException();
+    @ApiOperation(value = "Находит списки персонажей по комиксу id")
+    public ResponseEntity<List<CharacterRecord>> findByComicId(@PathVariable Long comicId) {
+        LOG.info("Запрос на списки персонажей по комиксу id");
+        List<CharacterRecord> characterRecords = characterService.findByComicId(comicId);
+        return !characterRecords.isEmpty() ? ResponseEntity.ok(characterRecords) : ResponseEntity.notFound().build();
     }
 
+    @PostMapping
+    @ApiOperation(value = "Сохраняет комикс")
+    public ResponseEntity<ComicRecord> saveComic(@RequestBody @Valid ComicRecord comicRecord) {
+        LOG.info("Запрос на сохранение комикса");
+        return ResponseEntity.ok(comicService.save(comicRecord));
+    }
 
-    @RequestMapping(value = "/save", method = RequestMethod.POST)
-    @ResponseStatus(code = HttpStatus.CREATED)
-    @ApiOperation(value = "Сохраняем комикс.")
-    public void saveComic(@RequestBody @Valid Comic comic) {
-        comicService.save(comic);
+    @PutMapping(value = "/{id}")
+    @ApiOperation(value = "Обновляет комикс")
+    public ResponseEntity<ComicRecord> updateComic(@PathVariable Long id,
+                                                   @RequestBody @Valid ComicRecord comicRecord) {
+        LOG.info("Запрос на обновление комикса");
+        return ResponseEntity.ok(comicService.update(id, comicRecord));
     }
 
 }

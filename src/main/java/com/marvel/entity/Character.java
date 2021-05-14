@@ -1,30 +1,33 @@
-package com.marvel.model;
+package com.marvel.entity;
+
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 @Entity
 public class Character {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private Long id;
     private String name;
     private String description;
+
+    @UpdateTimestamp
     private Date modified;
 
-    public Character() {
-    }
+    @ManyToMany
+    @JoinTable(name = "comics_characters", joinColumns = @JoinColumn(name = "character_id"), inverseJoinColumns = @JoinColumn(name = "comic_id"))
+    private List<Comic> comics = new ArrayList<>();
 
-    public Character(String name, String description, Date modified) {
-        this.name = name;
-        this.description = description;
-        this.modified = modified;
-    }
-
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -51,4 +54,13 @@ public class Character {
     public void setModified(Date modified) {
         this.modified = modified;
     }
+
+    public List<Comic> getComics() {
+        return comics;
+    }
+
+    public void setComics(List<Comic> comics) {
+        this.comics = comics;
+    }
+
 }

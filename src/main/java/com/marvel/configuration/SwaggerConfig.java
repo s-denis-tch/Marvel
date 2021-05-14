@@ -14,6 +14,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
+
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -29,7 +30,7 @@ public class SwaggerConfig {
                 .title("MARVEL REST API")
                 .description("REST API")
                 .version("1.0")
-                .contact(new Contact("Denis Sokolov", " " , "s-denis-tch@yandex.ru"))
+                .contact(new Contact("Denis Sokolov", " ", "s-denis-tch@yandex.ru"))
                 .build();
     }
 

@@ -1,80 +1,74 @@
 package com.marvel.controller;
 
-import com.marvel.exceptions.NotFoundException;
-import com.marvel.model.Character;
-import com.marvel.model.Comic;
+import com.marvel.record.CharacterRecord;
+import com.marvel.record.ComicRecord;
 import com.marvel.service.CharacterService;
 import com.marvel.service.ComicService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.ws.rs.QueryParam;
 import java.util.List;
 
 @RestController
-@RequestMapping("/characters")
+@RequestMapping("/v1/public/characters")
 @Api(value = "character_resources", description = "CRUD character")
 public class CharacterController {
 
-    @Autowired
-    private CharacterService characterService;
+    private static final Logger LOG = LoggerFactory.getLogger(CharacterController.class);
 
-    @Autowired
-    private ComicService comicService;
+    private final CharacterService characterService;
+    private final ComicService comicService;
 
-    @GetMapping("")
-    @ApiOperation(value = "Fetches lists of characters")
-    public ResponseEntity<List<Character>> findAll(@QueryParam("name") String name,
-                                                   @QueryParam("start") Integer start,
-                                                   @QueryParam("size") Integer size,
-                                                   @QueryParam("sortedBy") String sortedBy) {
+    public CharacterController(CharacterService characterService,
+                               ComicService comicService) {
+        this.characterService = characterService;
+        this.comicService = comicService;
+    }
 
-        List<Character> allCharacter = characterService.findAllCharacter();
-        if (sortedBy != null) allCharacter = characterService.sortBy(sortedBy);
-
-        if (name != null) allCharacter = characterService.getAllCharactersForName(name, allCharacter);
-
-        if (start != null && size != null)
-            allCharacter = characterService.getAllCharactersPaginated(start, size, allCharacter);
-
-        if (null != allCharacter) {
-            return ResponseEntity.ok(allCharacter);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @GetMapping
+    @ApiOperation(value = "Возвращает список персонажей")
+    public ResponseEntity<List<CharacterRecord>> findAll(@RequestParam(value = "name", required = false) String name,
+                                                         @RequestParam(value = "start", required = false, defaultValue = "0") int start,
+                                                         @RequestParam(value = "size", required = false, defaultValue = "20") int size,
+                                                         @RequestParam(value = "sortedBy", required = false, defaultValue = "name") String sortedBy) {
+        LOG.info("Запрос на список персонажей");
+        List<CharacterRecord> characterRecords = characterService.findAllCharacter(name, start, size, sortedBy);
+        return !characterRecords.isEmpty() ? ResponseEntity.ok(characterRecords) : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/{id}")
-    @ApiOperation(value = "Выбирает персонажа по id.")
-    public ResponseEntity<Character> findById(@RequestParam int id) {
-        Character character = characterService.findById(id);
-        if (character != null) {
-            return ResponseEntity.ok(character);
-        } else {
-            throw new NotFoundException();
-        }
+    @ApiOperation(value = "Выбирает персонажа по id")
+    public ResponseEntity<CharacterRecord> findById(@PathVariable Long id) {
+        LOG.info("Запрос на персонажа по id");
+        return ResponseEntity.ok(characterService.findById(id));
     }
-
 
     @GetMapping("/{characterId}/comics")
-    @ApiOperation(value = "Находим списки комиксов отфильтрованных по персонажу id.")
-    public ResponseEntity<List<Comic>> findComicsByCharacterId(@RequestParam int id) {
-        List<Comic> result = comicService.findByCharacterId(id);
-        if (result != null)
-            return ResponseEntity.ok(result);
-        else throw new NotFoundException();
+    @ApiOperation(value = "Находит списки комиксов с персонажем по id")
+    public ResponseEntity<List<ComicRecord>> findComicsByCharacterId(@PathVariable Long characterId) {
+        LOG.info("Запрос на списки комиксов с персонажем по id");
+        List<ComicRecord> comicRecords = comicService.findByCharacterId(characterId);
+        return !comicRecords.isEmpty() ? ResponseEntity.ok(comicRecords) : ResponseEntity.notFound().build();
     }
 
-    @RequestMapping(value = "/save", method = RequestMethod.POST)
-    @ResponseStatus(code = HttpStatus.CREATED)
-    @ApiOperation(value = "Сохраняем персонажа.")
-    public void saveCharacter(@RequestBody @Valid Character character) {
-        characterService.save(character);
+    @PostMapping
+    @ApiOperation(value = "Сохраняет персонажа")
+    public ResponseEntity<CharacterRecord> saveCharacter(@RequestBody @Valid CharacterRecord character) {
+        LOG.info("Запрос на сохранение персонажа");
+        return ResponseEntity.ok(characterService.save(character));
+    }
+
+    @PutMapping(value = "/{id}")
+    @ApiOperation(value = "Обновляет персонажа")
+    public ResponseEntity<CharacterRecord> updateCharacter(@PathVariable Long id,
+                                                           @RequestBody @Valid CharacterRecord character) {
+        LOG.info("Запрос на обновление персонажа");
+        return ResponseEntity.ok(characterService.update(id, character));
     }
 
 }

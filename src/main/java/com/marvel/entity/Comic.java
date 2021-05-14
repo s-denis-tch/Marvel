@@ -1,39 +1,33 @@
-package com.marvel.model;
+package com.marvel.entity;
+
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Entity
 public class Comic {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private Long id;
     private String title;
     private String description;
+
+    @UpdateTimestamp
     private Date modified;
 
     @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "comics_characters", inverseJoinColumns = @JoinColumn(name = "character_id"), joinColumns = @JoinColumn(name = "comic_id"))
     private List<Character> characters = new ArrayList<>();
 
-    public Comic() {
-    }
-
-    public Comic(String title, String description, Date modified, Character... characters) {
-        this.title = title;
-        this.description = description;
-        this.modified = modified;
-        this.characters = Stream.of(characters).collect(Collectors.toList());
-    }
-
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

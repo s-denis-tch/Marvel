@@ -1,11 +1,13 @@
-package com.marvel.starter;
+package com.marvel;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SpringBootStarter {
+public class MarvelApplication {
+
     public static void main(String[] args) {
-        SpringApplication.run(SpringBootStarter.class, args);
+        SpringApplication.run(MarvelApplication.class, args);
     }
+
 }

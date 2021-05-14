@@ -1,11 +1,15 @@
 package com.marvel.service;
 
-import com.marvel.model.Character;
+import com.marvel.entity.Character;
+import com.marvel.exceptions.NotFoundException;
+import com.marvel.record.CharacterRecord;
 import com.marvel.repository.CharacterRepository;
+import com.marvel.repository.OffsetBasedPage;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -13,49 +17,52 @@ import java.util.stream.Collectors;
 @Service
 public class CharacterService {
 
-    private  final CharacterRepository characterRepository;
+    private final CharacterRepository characterRepository;
 
     public CharacterService(CharacterRepository characterRepository) {
-
         this.characterRepository = characterRepository;
     }
 
-
-    public List<Character> findAllCharacter(){
-
-        return characterRepository.findAll();
+    public List<CharacterRecord> findAllCharacter(@Nullable String name,
+                                                  Integer start,
+                                                  Integer size,
+                                                  String sortedBy) {
+        OffsetBasedPage offsetBasedPage = new OffsetBasedPage(start, size, Sort.by(sortedBy));
+        return Optional.ofNullable(name)
+                .map(n -> characterRepository.findAllByName(n, offsetBasedPage))
+                .orElse(characterRepository.findAll(offsetBasedPage)).stream()
+                .map(CharacterRecord::from)
+                .collect(Collectors.toList());
     }
 
-    public Character findById(int id){
-        Optional<Character> optionalCharacter = characterRepository.findById(id);
-        return optionalCharacter.orElse(null);
+    public CharacterRecord findById(Long id) {
+        return characterRepository.findById(id)
+                .map(CharacterRecord::from)
+                .orElseThrow(NotFoundException::new);
     }
 
-    public List<Character> findByComicId(int comicId){
-        List<Character> optionalCharacter = characterRepository.findByComicId(comicId);
-        return optionalCharacter;
+    public List<CharacterRecord> findByComicId(Long comicId) {
+        return characterRepository.findAllByComics_Id(comicId).stream()
+                .map(CharacterRecord::from)
+                .collect(Collectors.toList());
     }
 
-    public List<Character> getAllCharactersForName(String name, List<Character> characterList){
-        List<Character> allCharactersForName = characterList;
-        return allCharactersForName.stream().filter(character -> character.getName().equals(name)).collect(Collectors.toList());
+    @Transactional
+    public CharacterRecord save(CharacterRecord characterRecord) {
+        return CharacterRecord.from(characterRepository.save(fill(new Character(), characterRecord)));
     }
 
-
-    public List<Character> getAllCharactersPaginated(int start, int size, List<Character> characters){
-        List<Character> paginated = characters;
-        if(start+size>paginated.size()) return new ArrayList<Character>();
-        return paginated.subList(start, start+size);
-
+    @Transactional
+    public CharacterRecord update(Long id, CharacterRecord newCharacter) {
+        Character oldCharacter = characterRepository.findById(id)
+                .orElseThrow(NotFoundException::new);
+        return CharacterRecord.from(characterRepository.save(fill(oldCharacter, newCharacter)));
     }
 
-    public Character save(Character character){
-
-        return characterRepository.save(character);
+    private Character fill(Character character, CharacterRecord characterRecord) {
+        character.setName(characterRecord.getName());
+        character.setDescription(characterRecord.getDescription());
+        return character;
     }
 
-    public List<Character> sortBy(String sortBy) {
-        Sort sortOrder = Sort.by(sortBy);
-        return characterRepository.findAll(sortOrder);
-    }
 }

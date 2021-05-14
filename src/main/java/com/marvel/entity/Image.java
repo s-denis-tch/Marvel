@@ -1,28 +1,18 @@
-package com.marvel.model;
+package com.marvel.entity;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 @Entity
 public class Image {
 
-    public Image() {
-        super();
-    }
-
-    public Image(String name, String type, byte[] data) {
-        this.name = name;
-        this.type = type;
-        this.data = data;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
     private String name;
-
     private String type;
-
     private byte[] data;
 
     public Long getId() {
