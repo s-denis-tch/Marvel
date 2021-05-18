@@ -1,13 +1,13 @@
 package com.marvel.record;
 
-import com.marvel.entity.Comic;
+import com.marvel.entity.Comics;
 
 import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ComicRecord {
+public class ComicsRecord {
 
     private Long id;
 
@@ -16,25 +16,25 @@ public class ComicRecord {
 
     @NotBlank
     private String description;
-    private List<CharacterRecord> characterRecords = new ArrayList<>();
+    private List<CharactersRecord> charactersRecords = new ArrayList<>();
 
-    public ComicRecord() {
+    public ComicsRecord() {
     }
 
-    public ComicRecord(Long id, String title, String description, List<CharacterRecord> characterRecords) {
+    public ComicsRecord(Long id, String title, String description, List<CharactersRecord> charactersRecords) {
         this.id = id;
         this.title = title;
         this.description = description;
-        this.characterRecords = characterRecords;
+        this.charactersRecords = charactersRecords;
     }
 
-    public static ComicRecord from(Comic comic) {
-        return new ComicRecord(
-                comic.getId(),
-                comic.getTitle(),
-                comic.getDescription(),
-                comic.getCharacters().stream()
-                        .map(CharacterRecord::from)
+    public static ComicsRecord from(Comics comics) {
+        return new ComicsRecord(
+                comics.getId(),
+                comics.getTitle(),
+                comics.getDescription(),
+                comics.getCharacters().stream()
+                        .map(CharactersRecord::from)
                         .collect(Collectors.toList())
         );
     }
@@ -63,12 +63,12 @@ public class ComicRecord {
         this.description = description;
     }
 
-    public List<CharacterRecord> getCharacterRecords() {
-        return characterRecords;
+    public List<CharactersRecord> getCharacterRecords() {
+        return charactersRecords;
     }
 
-    public void setCharacterRecords(List<CharacterRecord> characterRecords) {
-        this.characterRecords = characterRecords;
+    public void setCharacterRecords(List<CharactersRecord> charactersRecords) {
+        this.charactersRecords = charactersRecords;
     }
 
 }

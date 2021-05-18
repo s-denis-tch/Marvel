@@ -21,7 +21,7 @@ public class Character {
 
     @ManyToMany
     @JoinTable(name = "comics_characters", joinColumns = @JoinColumn(name = "character_id"), inverseJoinColumns = @JoinColumn(name = "comic_id"))
-    private List<Comic> comics = new ArrayList<>();
+    private List<Comics> comics = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -55,11 +55,11 @@ public class Character {
         this.modified = modified;
     }
 
-    public List<Comic> getComics() {
+    public List<Comics> getComics() {
         return comics;
     }
 
-    public void setComics(List<Comic> comics) {
+    public void setComics(List<Comics> comics) {
         this.comics = comics;
     }
 

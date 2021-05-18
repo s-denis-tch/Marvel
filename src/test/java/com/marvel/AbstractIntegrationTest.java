@@ -2,8 +2,8 @@ package com.marvel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
-import com.marvel.record.CharacterRecord;
-import com.marvel.record.ComicRecord;
+import com.marvel.record.CharactersRecord;
+import com.marvel.record.ComicsRecord;
 import org.junit.ClassRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,8 +19,8 @@ public class AbstractIntegrationTest {
 
     protected static final Faker FAKER = Faker.instance();
     protected static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    protected static final Comparator<CharacterRecord> CHARACTER_RECORD_COMPARATOR = Comparator.comparingLong(CharacterRecord::getId);
-    protected static final Comparator<ComicRecord> COMIC_RECORD_COMPARATOR = Comparator.comparingLong(ComicRecord::getId);
+    protected static final Comparator<CharactersRecord> CHARACTER_RECORD_COMPARATOR = Comparator.comparingLong(CharactersRecord::getId);
+    protected static final Comparator<ComicsRecord> COMIC_RECORD_COMPARATOR = Comparator.comparingLong(ComicsRecord::getId);
 
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")

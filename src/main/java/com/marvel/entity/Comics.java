@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-public class Comic {
+public class Comics {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
